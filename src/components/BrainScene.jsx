@@ -61,21 +61,27 @@ export default function BrainScene() {
   const [hoverRegion, setHoverRegion] = useState(null)
   const brainWrapRef = useRef(null)
 
-  // Prevent zoom/scroll and panning; keep rotation in place
+  // Strongly prevent zoom/scroll and panning; keep rotation only
   useEffect(() => {
     const el = brainWrapRef.current
     if (!el) return
-    const onWheel = (e) => { e.preventDefault() }
-    const onGesture = (e) => { e.preventDefault() }
-    el.addEventListener('wheel', onWheel, { passive: false })
-    el.addEventListener('gesturestart', onGesture)
-    el.addEventListener('gesturechange', onGesture)
-    el.addEventListener('gestureend', onGesture)
+
+    const stop = (e) => { e.preventDefault(); e.stopPropagation() }
+
+    // Prevent wheel zoom
+    el.addEventListener('wheel', stop, { passive: false })
+    // Prevent touch scroll/pinch
+    el.addEventListener('touchmove', stop, { passive: false })
+    el.addEventListener('gesturestart', stop)
+    el.addEventListener('gesturechange', stop)
+    el.addEventListener('gestureend', stop)
+
     return () => {
-      el.removeEventListener('wheel', onWheel)
-      el.removeEventListener('gesturestart', onGesture)
-      el.removeEventListener('gesturechange', onGesture)
-      el.removeEventListener('gestureend', onGesture)
+      el.removeEventListener('wheel', stop)
+      el.removeEventListener('touchmove', stop)
+      el.removeEventListener('gesturestart', stop)
+      el.removeEventListener('gesturechange', stop)
+      el.removeEventListener('gestureend', stop)
     }
   }, [])
 
@@ -132,8 +138,19 @@ export default function BrainScene() {
       </header>
 
       {/* Centered brain container; rotation in place */}
-      <div ref={brainWrapRef} className="relative z-0 mx-auto mt-2 flex h-[64vh] w-[92vw] max-w-5xl items-center justify-center rounded-[24px] border shadow-[0_15px_70px_rgba(11,27,58,0.10)]"
-           style={{ borderColor: 'rgba(11,27,58,0.12)', background: 'linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.45))', backdropFilter: 'blur(6px)', touchAction: 'none' }}>
+      <div
+        ref={brainWrapRef}
+        className="relative z-0 mx-auto mt-2 flex h-[64vh] w-[92vw] max-w-5xl items-center justify-center rounded-[24px] border shadow-[0_15px_70px_rgba(11,27,58,0.10)] select-none"
+        style={{
+          borderColor: 'rgba(11,27,58,0.12)',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.45))',
+          backdropFilter: 'blur(6px)',
+          touchAction: 'none',
+          WebkitUserSelect: 'none',
+          userSelect: 'none',
+          cursor: hoverRegion ? 'pointer' : 'grab',
+        }}
+      >
         <div className="pointer-events-auto h-full w-full">
           <Spline
             scene="https://prod.spline.design/kow0cKDK6Tap7xO9/scene.splinecode"
@@ -142,9 +159,41 @@ export default function BrainScene() {
             onMouseHover={handleMouseHover}
           />
         </div>
+
+        {/* Per-region hover glow and anchors overlay */}
+        <AnimatePresence>
+          {hoverRegion && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background: 'radial-gradient(40% 40% at 50% 50%, rgba(255,122,0,0.12), rgba(255,122,0,0) 60%)'
+              }}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Subtle center ring to visually "anchor" the brain */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-[54vh] w-[54vh] rounded-full" style={{ boxShadow: 'inset 0 0 0 1px rgba(11,27,58,0.10), 0 0 80px rgba(11,27,58,0.10)' }} />
+          <div className="relative h-[54vh] w-[54vh] rounded-full" style={{ boxShadow: 'inset 0 0 0 1px rgba(11,27,58,0.10), 0 0 80px rgba(11,27,58,0.10)' }}>
+            {/* Tiny orange anchors along circumference */}
+            {Array.from({ length: 12 }).map((_, i) => (
+              <span
+                key={i}
+                className="absolute block h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                style={{
+                  left: `${50 + 46 * Math.cos((i / 12) * 2 * Math.PI)}%`,
+                  top: `${50 + 46 * Math.sin((i / 12) * 2 * Math.PI)}%`,
+                  backgroundColor: PALETTE.orange,
+                  opacity: hoverRegion ? 0.9 : 0.35,
+                  boxShadow: hoverRegion ? '0 0 10px rgba(255,122,0,0.8)' : '0 0 4px rgba(255,122,0,0.5)'
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
@@ -204,6 +253,17 @@ export default function BrainScene() {
           </button>
         ))}
       </div>
+
+      {/* Modal mount */}
+      <AnimatePresence>
+        {activeRegion && (
+          <BrainRegionModal
+            open={!!activeRegion}
+            region={activeRegion}
+            onClose={() => setActiveRegion(null)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Ambient vignette */}
       <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(60% 60% at 50% 40%, rgba(0,0,0,0.04), transparent 60%)' }} />
