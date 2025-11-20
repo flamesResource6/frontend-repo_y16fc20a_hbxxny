@@ -3,7 +3,9 @@
 > vite
 
 
-  VITE v5.4.20  ready in 282 ms
+  VITE v5.4.20  ready in 263 ms
 
   ➜  Local:   http://localhost:3000/
   ➜  Network: http://172.20.0.111:3000/
+9:53:42 PM [vite] Pre-transform error: Transform failed with 1 error:
+/home/workspace/src/components/BrainScene.jsx:157:118: ERROR: Expected "..." but found "}"

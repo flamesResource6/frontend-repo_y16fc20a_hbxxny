@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import Spline from '@splinetool/react-spline'
 import { motion, AnimatePresence } from 'framer-motion'
 import BrainRegionModal from './BrainRegionModal'
+import QuickCaptureDock from './QuickCaptureDock'
 
 const PALETTE = {
   navy: '#0b1b3a',
@@ -153,7 +154,7 @@ export default function BrainScene() {
       >
         <div className="pointer-events-auto h-full w-full">
           <Spline
-            scene="https://prod.spline.design/kow0cKDK6Tap7xO9/scene.splinecode"
+            scene="https://prod.spline.design/9xqOyyxIQo4G2j4u/scene.splinecode"{/* brighter, glossy material brain */}
             style={{ width: '100%', height: '100%' }}
             onMouseDown={handleMouseDown}
             onMouseHover={handleMouseHover}
@@ -170,7 +171,7 @@ export default function BrainScene() {
               transition={{ duration: 0.18 }}
               className="pointer-events-none absolute inset-0"
               style={{
-                background: 'radial-gradient(40% 40% at 50% 50%, rgba(255,122,0,0.12), rgba(255,122,0,0) 60%)'
+                background: 'radial-gradient(40% 40% at 50% 50%, rgba(255,122,0,0.16), rgba(255,122,0,0) 60%)'
               }}
             />
           )}
@@ -178,7 +179,7 @@ export default function BrainScene() {
 
         {/* Subtle center ring to visually "anchor" the brain */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="relative h-[54vh] w-[54vh] rounded-full" style={{ boxShadow: 'inset 0 0 0 1px rgba(11,27,58,0.10), 0 0 80px rgba(11,27,58,0.10)' }}>
+          <div className="relative h-[54vh] w-[54vh] rounded-full" style={{ boxShadow: 'inset 0 0 0 1px rgba(11,27,58,0.10), 0 0 120px rgba(255,122,0,0.12), 0 0 80px rgba(11,27,58,0.08)' }}>
             {/* Tiny orange anchors along circumference */}
             {Array.from({ length: 12 }).map((_, i) => (
               <span
@@ -188,13 +189,16 @@ export default function BrainScene() {
                   left: `${50 + 46 * Math.cos((i / 12) * 2 * Math.PI)}%`,
                   top: `${50 + 46 * Math.sin((i / 12) * 2 * Math.PI)}%`,
                   backgroundColor: PALETTE.orange,
-                  opacity: hoverRegion ? 0.9 : 0.35,
-                  boxShadow: hoverRegion ? '0 0 10px rgba(255,122,0,0.8)' : '0 0 4px rgba(255,122,0,0.5)'
+                  opacity: hoverRegion ? 1 : 0.35,
+                  boxShadow: hoverRegion ? '0 0 14px rgba(255,122,0,0.9)' : '0 0 6px rgba(255,122,0,0.5)'
                 }}
               />
             ))}
           </div>
         </div>
+
+        {/* Quick capture dock centered over brain */}
+        <QuickCaptureDock align="center" />
       </div>
 
       {/* Title + explanation (harmonized colors) */}
@@ -206,7 +210,7 @@ export default function BrainScene() {
           className="text-balance text-4xl font-semibold sm:text-5xl"
           style={{ color: PALETTE.navy }}
         >
-          Explore your living brain
+          Your brain, your superpower
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 12 }}
@@ -215,7 +219,7 @@ export default function BrainScene() {
           className="mt-3 text-base"
           style={{ color: '#2b2b2b' }}
         >
-          Regions and labels are one — they rotate together. Click to step inside and work in context.
+          Centered within the ring and rotating on its own axis. Capture ideas instantly by voice or text.
         </motion.p>
       </div>
 
